@@ -1,4 +1,3 @@
-import type { ComponentType, ForwardedRef, ReactElement, Ref } from 'react';
 import React, {
   forwardRef,
   useCallback,
@@ -8,21 +7,23 @@ import React, {
   useMemo,
   useRef,
   useState,
+  type ComponentType,
+  type ForwardedRef,
+  type ReactElement,
+  type Ref,
 } from 'react';
-import type {
-  CellRendererProps,
-  FlatListProps,
-  ListRenderItem,
-  NativeSyntheticEvent,
-  NativeTouchEvent,
-  ViewabilityConfigCallbackPairs,
-} from 'react-native';
 import {
   Animated,
-  Dimensions,
   FlatList,
   PanResponder,
+  useWindowDimensions,
   View,
+  type CellRendererProps,
+  type FlatListProps,
+  type ListRenderItem,
+  type NativeSyntheticEvent,
+  type NativeTouchEvent,
+  type ViewabilityConfigCallbackPairs,
 } from 'react-native';
 import { DraggableMasonryGridCardWrapper } from './CardWrapper';
 import type {
@@ -50,8 +51,6 @@ const AUTO_SCROLL_MAYBE_LOADED_MORE_CLIPS_CHECK_POLL_MS = 500;
 const REARRANGE_CHECK_THROTTLE_MS = 100;
 const WAIT_FOR_RESPONDER_TRANSFER_MS = 200;
 const WINDOW_SIZE_CHECK_THROTTLE_MS = 200;
-
-const WINDOW_HEIGHT = Dimensions.get('window').height;
 
 type DraggableMasonryGridListProps<T> = Omit<
   FlatListProps<DraggableMasonryGridListData<T>[]>,
@@ -127,7 +126,9 @@ function GridList<T>(
   });
 
   /*----------------------------- declare states and refs -----------------------------*/
-  const flatListHeightRef = useRef(WINDOW_HEIGHT);
+  const { height } = useWindowDimensions();
+  const flatListHeightRef = useRef(height);
+  flatListHeightRef.current = height;
   const headerHeightRef = useRef(0);
   const listContentHeightRef = useRef(0);
   listContentHeightRef.current =
