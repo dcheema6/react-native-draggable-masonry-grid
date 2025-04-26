@@ -169,6 +169,10 @@ return (
 );
 ```
 
+## Library in action
+
+https://github.com/user-attachments/assets/9427e600-dc1f-43ae-b805-5965e1f32f52
+
 ## Contributing
 
 See the [contributing guide](CONTRIBUTING.md) to learn how to contribute to the repository and the development workflow.

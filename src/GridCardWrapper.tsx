@@ -61,7 +61,7 @@ export const GridCardWrapper = forwardRef(
         animation.stop();
         rotationAnimation.setValue(0);
       };
-    }, [props.wobble]);
+    }, [props.wobble, rotationAnimation, rotionAnimationTimeMS]);
 
     useImperativeHandle(
       ref,

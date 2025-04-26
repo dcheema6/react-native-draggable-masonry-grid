@@ -76,10 +76,7 @@ function GridList<T>(
 
   const wobbleAnimationConfig = useRef(props.wobbleAnimationConfig).current;
 
-  const gridItemsCombinedHeight = useMemo(
-    () => Math.max(...columnHeights),
-    [...columnHeights]
-  );
+  const gridItemsCombinedHeight = Math.max(...columnHeights);
 
   const rearrangeCacheRef = useRef({
     columnsForGrid,
@@ -200,7 +197,7 @@ function GridList<T>(
         })
       );
     },
-    [keyExtractor]
+    [itemDraggedRef, keyExtractor]
   );
 
   const cardCacheInitialize = useCallback(
@@ -244,7 +241,7 @@ function GridList<T>(
         cardsCacheRef.current[key]?.ref.current?.setShouldRender(shouldRender);
       });
     },
-    [getItemOffsetOnFlatlist, keyExtractor]
+    [getItemOffsetOnFlatlist, itemDraggedRef, keyExtractor, windowSize]
   );
 
   const onScroll = useCallback(
@@ -253,7 +250,7 @@ function GridList<T>(
       lastScrollEventOffsetRef.current = scrollOffset;
       const nowMs = new Date().getTime();
 
-      if (!!propsRef.current.onEndReached) {
+      if (propsRef.current.onEndReached) {
         const distanceFromEnd = Math.round(
           bottomScrollOffsetRef.current - scrollOffset
         );
@@ -279,7 +276,7 @@ function GridList<T>(
         renderItemsInWindow(scrollOffset);
       }
 
-      if (!!propsRef.current.onScroll) {
+      if (propsRef.current.onScroll) {
         const timeSinceLastEventMs = nowMs - lastScrollEventSentMsRef.current;
         if (
           !propsRef.current.scrollEventThrottle ||
@@ -290,12 +287,7 @@ function GridList<T>(
         }
       }
     },
-    [
-      onEndReachedThreshold,
-      !!propsRef.current.onEndReached,
-      !!propsRef.current.onScroll,
-      renderItemsInWindow,
-    ]
+    [onEndReachedThreshold, propsRef, renderItemsInWindow]
   );
 
   /*----------------------------- Auto scrolling handlers -----------------------------*/
@@ -345,7 +337,7 @@ function GridList<T>(
         triggerScroll();
 
         // if onEndReached is provided, keep polling in case new clips have been loaded underneath
-        if (!!propsRef.current.onEndReached) {
+        if (propsRef.current.onEndReached) {
           // clear previous interval in case called multiple times
           if (autoScrollVaiablesRef.current.scrollLoadMorePollInterval)
             clearInterval(
@@ -367,7 +359,7 @@ function GridList<T>(
         autoScrollVaiablesRef.current.scrollAnimation = undefined;
       },
     }),
-    [getTotalScrollOffset, !!propsRef.current.onEndReached]
+    [getTotalScrollOffset, propsRef]
   );
 
   /*----------------------------- Auto scroll listner -----------------------------*/
@@ -376,8 +368,11 @@ function GridList<T>(
       animatedScrollOffsetRef.current = -v.value;
       onScroll(getTotalScrollOffset());
     });
-    return () => animatedScrollYRef.current.removeListener(listner);
-  }, [getTotalScrollOffset, onScroll]);
+    return () => {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      animatedScrollYRef.current.removeListener(listner);
+    };
+  }, [animatedScrollYRef, getTotalScrollOffset, onScroll]);
 
   /*----------------------------- Drag/drop Rearrange handlers -----------------------------*/
   const getDataInRearrangedSequence = useCallback(
@@ -478,7 +473,7 @@ function GridList<T>(
         Animated.parallel(animations).start(() => res())
       );
     },
-    [keyExtractor, getRearrangeAnimation]
+    [keyExtractor, itemDraggedRef, getRearrangeAnimation]
   );
   const resetRearrangeAnimations = useCallback(() => {
     Object.values(cardsCacheRef.current).forEach((cardCache) =>
@@ -496,7 +491,7 @@ function GridList<T>(
         useNativeDriver: true,
       }).start();
     },
-    [calculateAndCacheCardVertices]
+    [calculateAndCacheCardVertices, setItemDragged, setShouldSetPanResponder]
   );
   const triggerDragEnd = useCallback(() => {
     if (!itemDraggedRef.current) return;
@@ -571,10 +566,13 @@ function GridList<T>(
       propsRef.current.onRearrange(rearrangeCacheRef.current.rawDataInSequence);
     });
   }, [
+    itemDraggedRef,
+    setShouldSetPanResponder,
     autoScrollMethods,
     getTotalScrollOffset,
     getRearrangeAnimation,
     runRearrangeAnimations,
+    setItemDragged,
   ]);
   const handleItemDragEnd = useCallback(
     (skipTimeout = false) => {
@@ -590,7 +588,7 @@ function GridList<T>(
         );
       }
     },
-    [triggerDragEnd]
+    [itemDraggedRef, triggerDragEnd]
   );
 
   const matchAnimationPositionsToCurrentDataSequence = useCallback(async () => {
@@ -739,13 +737,15 @@ function GridList<T>(
     [
       autoScrollMethods,
       calculateAndCacheCardVertices,
+      getDataInRearrangedSequence,
       getItemOffsetOnFlatlist,
+      getOverlapingCard,
       getTotalScrollOffset,
       handleItemDragEnd,
+      itemDraggedRef,
       keyExtractor,
-      props.viewOffsets?.bottom,
-      props.viewOffsets?.top,
       runRearrangeAnimations,
+      shouldSetPanResponderRef,
     ]
   ).panHandlers;
 
@@ -782,6 +782,7 @@ function GridList<T>(
     return () => {
       clearTimeout(responderReleaseTimeoutRef.current);
       clearTimeout(rearrangeAnimationsTimeoutRef.current?.timeout);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       clearInterval(autoScrollVaiablesRef.current.scrollLoadMorePollInterval);
     };
   }, []);
@@ -801,7 +802,16 @@ function GridList<T>(
       gridDataInSequence,
       rawDataInSequence: rearrangedRawData,
     };
-  }, [columnsForGrid]);
+  }, [
+    calculateAndCacheCardVertices,
+    columnHeights,
+    columnsForGrid,
+    getTotalScrollOffset,
+    gridDataInSequence,
+    rearrangedRawData,
+    renderItemsInWindow,
+    resetRearrangeAnimations,
+  ]);
 
   /*************** Main render ***************/
   const renderItem = useCallback(
@@ -865,6 +875,8 @@ function GridList<T>(
       draggedItemPanhandlers,
       handleItemDragEnd,
       handleItemDragStart,
+      initialNumToRender,
+      itemDraggedRef,
       keyExtractor,
       wobbleAnimationConfig,
     ]
@@ -884,7 +896,7 @@ function GridList<T>(
         />
       );
     },
-    [keyExtractor]
+    [itemDraggedRef, keyExtractor]
   );
   const getItemLayout = useCallback(
     (
@@ -898,7 +910,7 @@ function GridList<T>(
         offset: content?.offsetY ?? 0,
       };
     },
-    [getItemOffsetOnFlatlist]
+    []
   );
   const renderColumn: ListRenderItem<DraggableMasonryGridListData<T>[]> =
     useCallback(
@@ -925,7 +937,13 @@ function GridList<T>(
           windowSize={Number.MAX_SAFE_INTEGER}
         />
       ),
-      [getItemLayout, keyExtractor, renderCellComponent, renderItem]
+      [
+        getItemLayout,
+        itemDraggedRef,
+        keyExtractor,
+        renderCellComponent,
+        renderItem,
+      ]
     );
 
   return (
