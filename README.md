@@ -2,7 +2,7 @@
 
 React native Flatlist based implementation of masonary grid with drag/drop functionality.
 Accepts pretty much all props as Flatlist but with some subtle differences.
-Ability to create sectioned
+Ability to create sectioned list with some hacks.
 
 Cons:
 
