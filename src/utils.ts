@@ -7,6 +7,19 @@ import type {
   Vertices,
 } from './types';
 
+export function asyncWaitForMS(waitForMS: number) {
+  return new Promise((res) => setTimeout(res, waitForMS));
+}
+
+/**
+ * @param min
+ * @param max
+ * @returns {number} random integer between min(inclusive) and max(inclusive)
+ */
+export const generateRandomInteger = (min: number, max: number) => {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+};
+
 /**
  *
  * @param array
@@ -217,13 +230,13 @@ export const getDistanceBetweenVertices = (
       Math.pow(coordinatesA.y - coordinatesB.y, 2)
   );
 
-const getViewMeasurements = (cardRef: RefObject<View> | undefined) =>
+const getViewMeasurements = (cardRef: RefObject<View | null> | undefined) =>
   new Promise<Parameters<MeasureOnSuccessCallback>>((res) =>
     cardRef?.current?.measure((...values) => res(values))
   );
 
 export const getViewVertices = async (
-  cardRef: RefObject<View> | undefined,
+  cardRef: RefObject<View | null> | undefined,
   options: { scale?: number; offsets?: Partial<Vertices> } = {}
 ): Promise<Vertices> => {
   const { scale = 1, offsets } = options;

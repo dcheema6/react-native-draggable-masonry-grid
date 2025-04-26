@@ -21,7 +21,7 @@ export type DraggableMasonryGridListRef = {
   animateToOriginalPositions(): Promise<void>;
 };
 export type DraggableMasonryGridCardWrapperRef = {
-  viewRef: React.RefObject<View>;
+  viewRef: React.RefObject<View | null>;
   setShouldRender(shouldRender: boolean): void;
 };
 
