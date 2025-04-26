@@ -7,10 +7,6 @@ import React, {
   useMemo,
   useRef,
   useState,
-  type ComponentType,
-  type ForwardedRef,
-  type ReactElement,
-  type Ref,
 } from 'react';
 import {
   Animated,
@@ -19,19 +15,18 @@ import {
   useWindowDimensions,
   View,
   type CellRendererProps,
-  type FlatListProps,
   type ListRenderItem,
   type NativeSyntheticEvent,
   type NativeTouchEvent,
-  type ViewabilityConfigCallbackPairs,
 } from 'react-native';
-import { DraggableMasonryGridCardWrapper } from './CardWrapper';
+import { GridCardWrapper } from './GridCardWrapper';
 import type {
   DraggableGridCardRef,
   DraggableItem,
   DraggableMasonryGridCardWrapperRef,
   DraggableMasonryGridListData,
   DraggableMasonryGridListItem,
+  DraggableMasonryGridListProps,
   DraggableMasonryGridListRef,
   Vertices,
 } from './types';
@@ -52,47 +47,13 @@ const REARRANGE_CHECK_THROTTLE_MS = 100;
 const WAIT_FOR_RESPONDER_TRANSFER_MS = 200;
 const WINDOW_SIZE_CHECK_THROTTLE_MS = 200;
 
-type DraggableMasonryGridListProps<T> = Omit<
-  FlatListProps<DraggableMasonryGridListData<T>[]>,
-  | 'data'
-  | 'getItemLayout'
-  | 'keyExtractor'
-  | 'onScroll'
-  | 'renderItem'
-  | 'scrollEventThrottle'
-> & {
-  columnViewabilityConfigCallbackPairs?: ViewabilityConfigCallbackPairs[];
-  columnWidth: number;
-  data: DraggableItem<T>[];
-  keyExtractor: (item: DraggableMasonryGridListItem<T>) => string;
-  onRearrange(rearrangedData: DraggableItem<T>[]): void;
-  onScroll?(offsetY: number): void;
-  renderItem(
-    item: DraggableMasonryGridListItem<T>,
-    drag: () => void,
-    dragRelease: () => void
-  ): ReactElement | null;
-  /**
-   * This controls how often the scroll event will be fired while scrolling (as a time interval in ms).
-   * A lower number yields better accuracy for code that is tracking the scroll position,
-   * but can lead to scroll performance problems due to the volume of information being sent over the bridge.
-   * The default value is zero, which means the scroll event will be sent every time the view is scrolled.
-   */
-  scrollEventThrottle?: number;
-  viewPostOffsets?: {
-    top?: number;
-    bottom?: number;
-  };
-  wobble?: boolean;
-};
-
 /**
  * Notes:
  * - Does not support sticky headers yet
  */
 function GridList<T>(
   props: DraggableMasonryGridListProps<T>,
-  ref: Ref<DraggableMasonryGridListRef>
+  ref: React.Ref<DraggableMasonryGridListRef>
 ) {
   /*----------------------------- extract data -----------------------------*/
   const initialNumToRender = props.initialNumToRender ?? 5;
@@ -112,6 +73,8 @@ function GridList<T>(
   );
   const gridDataInSequenceRef = useRef(gridDataInSequence);
   gridDataInSequenceRef.current = gridDataInSequence;
+
+  const wobbleAnimationConfig = useRef(props.wobbleAnimationConfig).current;
 
   const gridItemsCombinedHeight = useMemo(
     () => Math.max(...columnHeights),
@@ -865,7 +828,7 @@ function GridList<T>(
       const isThisCardBeingDragged =
         itemDraggedRef.current && key === keyExtractor(itemDraggedRef.current);
       return (
-        <DraggableMasonryGridCardWrapper
+        <GridCardWrapper
           // mimic react native flatlist behaviour
           alwaysRender={item.index < initialNumToRender}
           panHandlers={draggedItemPanhandlers}
@@ -885,13 +848,14 @@ function GridList<T>(
             width: propsRef.current.columnWidth,
           }}
           wobble={!isThisCardBeingDragged && !!propsRef.current.wobble}
+          wobbleAnimationConfig={wobbleAnimationConfig}
         >
           {propsRef.current.renderItem(
             item,
             () => handleItemDragStart(item),
             handleItemDragEnd
           )}
-        </DraggableMasonryGridCardWrapper>
+        </GridCardWrapper>
       );
     },
     [
@@ -900,10 +864,11 @@ function GridList<T>(
       handleItemDragEnd,
       handleItemDragStart,
       keyExtractor,
+      wobbleAnimationConfig,
     ]
   );
   const renderCellComponent = useCallback<
-    ComponentType<CellRendererProps<DraggableMasonryGridListData<T>>>
+    React.ComponentType<CellRendererProps<DraggableMasonryGridListData<T>>>
   >(
     ({ style, ...cellComponentProps }) => {
       const item: DraggableMasonryGridListData<T> = cellComponentProps.item;
@@ -1014,6 +979,6 @@ function GridList<T>(
 // to allow generic props with forwardRef
 export const DraggableMasonryGridList = forwardRef(GridList) as <T>(
   props: DraggableMasonryGridListProps<T> & {
-    ref?: ForwardedRef<DraggableMasonryGridListRef>;
+    ref?: React.ForwardedRef<DraggableMasonryGridListRef>;
   }
 ) => ReturnType<typeof GridList>;

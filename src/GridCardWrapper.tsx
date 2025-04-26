@@ -1,58 +1,52 @@
 import React, {
   forwardRef,
-  type Ref,
   useEffect,
   useImperativeHandle,
   useRef,
   useState,
 } from 'react';
-import {
-  Animated,
-  type GestureResponderHandlers,
-  type MaximumOneOf,
-  type ScaleTransform,
-  type TranslateXTransform,
-  type TranslateYTransform,
-  View,
-  type ViewStyle,
-} from 'react-native';
+import { Animated, View } from 'react-native';
 import { asyncWaitForMS, generateRandomInteger } from './utils';
-import type { DraggableMasonryGridCardWrapperRef } from './types';
+import type {
+  DraggableMasonryGridCardWrapperRef,
+  GridCardWrapperProps,
+  MasonaryGridWobbleAnimationConfig,
+} from './types';
 
-const ROTATION_ANGLE_X_DEG = 2;
-const ROTATION_ANGLE_Y_DEG = 1;
-const ROTATION_ANGLE_Z_DEG = 0.7;
-const ROTATION_ANIMATION_MS = 180;
-
-type Props = {
-  children: React.ReactNode;
-  panHandlers: GestureResponderHandlers | undefined;
-  alwaysRender: boolean;
-  style: Omit<Animated.AnimatedProps<ViewStyle>, 'transform'> & {
-    transform: Readonly<
-      MaximumOneOf<ScaleTransform & TranslateXTransform & TranslateYTransform>[]
-    >;
-  };
-  wobble: boolean;
+const defaultWobbleAnimationConfig: MasonaryGridWobbleAnimationConfig = {
+  rotionAngleXDeg: 2,
+  rotionAngleYDeg: 1,
+  rotionAngleZDeg: 1.2,
+  rotionAnimationTimeMS: 130,
 };
-export const DraggableMasonryGridCardWrapper = forwardRef(
-  (props: Props, ref: Ref<DraggableMasonryGridCardWrapperRef>) => {
+
+export const GridCardWrapper = forwardRef(
+  (
+    props: GridCardWrapperProps,
+    ref: React.Ref<DraggableMasonryGridCardWrapperRef>
+  ) => {
     const viewRef = useRef<View>(null);
     const rotationAnimation = useRef(new Animated.Value(0)).current;
     const [shouldRender, setShouldRender] = useState(false);
+    const {
+      rotionAngleXDeg,
+      rotionAngleYDeg,
+      rotionAngleZDeg,
+      rotionAnimationTimeMS,
+    } = props.wobbleAnimationConfig ?? defaultWobbleAnimationConfig;
 
     useEffect(() => {
       if (!props.wobble) return;
       const animation = Animated.loop(
         Animated.sequence([
           Animated.timing(rotationAnimation, {
-            duration: ROTATION_ANIMATION_MS,
+            duration: rotionAnimationTimeMS,
             toValue: 1,
             useNativeDriver: true,
           }),
           Animated.timing(rotationAnimation, {
-            duration: ROTATION_ANIMATION_MS,
-            toValue: -1,
+            duration: rotionAnimationTimeMS,
+            toValue: 0,
             useNativeDriver: true,
           }),
         ])
@@ -91,9 +85,9 @@ export const DraggableMasonryGridCardWrapper = forwardRef(
                 rotateX: rotationAnimation.interpolate({
                   inputRange: [-1, 0, 1],
                   outputRange: [
-                    `-${ROTATION_ANGLE_X_DEG}deg`,
+                    `-${rotionAngleXDeg}deg`,
                     '0deg',
-                    `${ROTATION_ANGLE_X_DEG}deg`,
+                    `${rotionAngleXDeg}deg`,
                   ],
                 }),
               },
@@ -101,9 +95,9 @@ export const DraggableMasonryGridCardWrapper = forwardRef(
                 rotateY: rotationAnimation.interpolate({
                   inputRange: [-1, 0, 1],
                   outputRange: [
-                    `-${ROTATION_ANGLE_Y_DEG}deg`,
+                    `-${rotionAngleYDeg}deg`,
                     '0deg',
-                    `${ROTATION_ANGLE_Y_DEG}deg`,
+                    `${rotionAngleYDeg}deg`,
                   ],
                 }),
               },
@@ -111,9 +105,9 @@ export const DraggableMasonryGridCardWrapper = forwardRef(
                 rotateZ: rotationAnimation.interpolate({
                   inputRange: [-1, 0, 1],
                   outputRange: [
-                    `-${ROTATION_ANGLE_Z_DEG}deg`,
+                    `-${rotionAngleZDeg}deg`,
                     '0deg',
-                    `${ROTATION_ANGLE_Z_DEG}deg`,
+                    `${rotionAngleZDeg}deg`,
                   ],
                 }),
               },

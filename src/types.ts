@@ -1,4 +1,69 @@
-import type { Animated, View } from 'react-native';
+import type { ReactElement } from 'react';
+import type {
+  Animated,
+  FlatListProps,
+  GestureResponderHandlers,
+  MaximumOneOf,
+  ScaleTransform,
+  TranslateXTransform,
+  TranslateYTransform,
+  View,
+  ViewabilityConfigCallbackPairs,
+  ViewStyle,
+} from 'react-native';
+
+export type MasonaryGridWobbleAnimationConfig = {
+  rotionAngleXDeg: number;
+  rotionAngleYDeg: number;
+  rotionAngleZDeg: number;
+  rotionAnimationTimeMS: number;
+};
+export type GridCardWrapperProps = {
+  children: React.ReactNode;
+  panHandlers: GestureResponderHandlers | undefined;
+  alwaysRender: boolean;
+  style: Omit<Animated.AnimatedProps<ViewStyle>, 'transform'> & {
+    transform: Readonly<
+      MaximumOneOf<ScaleTransform & TranslateXTransform & TranslateYTransform>[]
+    >;
+  };
+  wobble: boolean;
+  wobbleAnimationConfig?: MasonaryGridWobbleAnimationConfig;
+};
+export type DraggableMasonryGridListProps<T> = Omit<
+  FlatListProps<DraggableMasonryGridListData<T>[]>,
+  | 'data'
+  | 'getItemLayout'
+  | 'keyExtractor'
+  | 'onScroll'
+  | 'renderItem'
+  | 'scrollEventThrottle'
+> & {
+  columnViewabilityConfigCallbackPairs?: ViewabilityConfigCallbackPairs[];
+  columnWidth: number;
+  data: DraggableItem<T>[];
+  keyExtractor: (item: DraggableMasonryGridListItem<T>) => string;
+  onRearrange(rearrangedData: DraggableItem<T>[]): void;
+  onScroll?(offsetY: number): void;
+  renderItem(
+    item: DraggableMasonryGridListItem<T>,
+    drag: () => void,
+    dragRelease: () => void
+  ): ReactElement | null;
+  /**
+   * This controls how often the scroll event will be fired while scrolling (as a time interval in ms).
+   * A lower number yields better accuracy for code that is tracking the scroll position,
+   * but can lead to scroll performance problems due to the volume of information being sent over the bridge.
+   * The default value is zero, which means the scroll event will be sent every time the view is scrolled.
+   */
+  scrollEventThrottle?: number;
+  viewPostOffsets?: {
+    top?: number;
+    bottom?: number;
+  };
+  wobble?: boolean;
+  wobbleAnimationConfig: MasonaryGridWobbleAnimationConfig;
+};
 
 export type Coordinates = { x: number; y: number };
 export type Vertices = {
