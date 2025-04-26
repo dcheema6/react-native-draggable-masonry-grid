@@ -63,7 +63,7 @@ export type DraggableMasonryGridListProps<T> = Omit<
     bottom?: number;
   };
   wobble?: boolean;
-  wobbleAnimationConfig: MasonaryGridWobbleAnimationConfig;
+  wobbleAnimationConfig?: MasonaryGridWobbleAnimationConfig;
 };
 
 export type Coordinates = { x: number; y: number };
