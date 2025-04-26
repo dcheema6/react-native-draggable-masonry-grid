@@ -659,12 +659,12 @@ function GridList<T>(
               );
               const isItemOffScreenTop =
                 itemCurrentOffsetY <
-                -offsetPadding + (propsRef.current.viewPostOffsets?.top ?? 0);
+                -offsetPadding + (propsRef.current.viewOffsets?.top ?? 0);
               const isItemOffScreenBottom =
                 itemCurrentOffsetY + itemDraggedRef.current.height >
                 flatListHeightRef.current +
                   offsetPadding -
-                  (propsRef.current.viewPostOffsets?.bottom ?? 0);
+                  (propsRef.current.viewOffsets?.bottom ?? 0);
               if (isItemOffScreenTop || isItemOffScreenBottom) {
                 const desiredOffset = isItemOffScreenTop
                   ? topScrollOffsetRef.current
@@ -743,6 +743,8 @@ function GridList<T>(
       getTotalScrollOffset,
       handleItemDragEnd,
       keyExtractor,
+      props.viewOffsets?.bottom,
+      props.viewOffsets?.top,
       runRearrangeAnimations,
     ]
   ).panHandlers;

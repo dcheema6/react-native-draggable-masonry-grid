@@ -38,6 +38,7 @@ export type DraggableMasonryGridListProps<T> = Omit<
   | 'onScroll'
   | 'renderItem'
   | 'scrollEventThrottle'
+  | 'viewabilityConfigCallbackPairs'
 > & {
   columnViewabilityConfigCallbackPairs?: ViewabilityConfigCallbackPairs[];
   columnWidth: number;
@@ -57,7 +58,7 @@ export type DraggableMasonryGridListProps<T> = Omit<
    * The default value is zero, which means the scroll event will be sent every time the view is scrolled.
    */
   scrollEventThrottle?: number;
-  viewPostOffsets?: {
+  viewOffsets?: {
     top?: number;
     bottom?: number;
   };
