@@ -96,7 +96,7 @@ const onScrollToItem = (itemId: string, animated: boolean = false) => {
         () =>
             gridListRef.current?.scrollToIndex({
                 index: indexToScrollTo,
-                offset: STORY_PINNED_HEADER_HEIGHT - subheaderHeightRef.current,
+                offset: heightOfStickyHeader + yourRequiredOffset,
                 animated,
             }),
         0,
