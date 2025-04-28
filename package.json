@@ -41,9 +41,12 @@
     "release": "release-it"
   },
   "keywords": [
+    "drag",
+    "grid",
+    "masonary",
     "react-native",
-    "ios",
-    "android"
+    "rearrange",
+    "sort"
   ],
   "repository": {
     "type": "git",
