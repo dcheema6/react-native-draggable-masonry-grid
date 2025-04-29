@@ -11,6 +11,12 @@ Cons:
 - viewabilityConfigCallbackPairs need to be passed separately for each column as columnViewabilityConfigCallbackPairs.
 - Data returned by different callbacks can be confusing, but I have given examples in the Usage section, so hopefully that will be enough.
 
+## Demo
+
+<p align="center">
+  <img alt="Issue Stats" width="400" src="https://github.com/dcheema6/react-native-draggable-masonry-grid/blob/main/example.gif?raw=true">
+</p>
+
 ## Installation
 
 ```sh
@@ -196,12 +202,6 @@ return (
   />
 );
 ```
-
-## Library in action
-
-<p align="center">
-  <img alt="Issue Stats" width="400" src="https://github.com/dcheema6/react-native-draggable-masonry-grid/blob/main/example.gif?raw=true">
-</p>
 
 ## Contributing
 
