@@ -13,9 +13,16 @@ Cons:
 
 ## Demo
 
-<p align="center">
-  <img alt="Issue Stats" width="400" src="https://github.com/dcheema6/react-native-draggable-masonry-grid/blob/main/example.gif?raw=true">
-</p>
+<div style="display: flex; flex-direction: row; justify-content: center;">
+  <div>
+    <p>Default</p>
+    <img width="400" src="https://github.com/dcheema6/react-native-draggable-masonry-grid/blob/main/example.gif?raw=true">
+  </div>
+  <div>
+    <p>With wobble prop</p>
+    <img width="400" src="https://github.com/dcheema6/react-native-draggable-masonry-grid/blob/main/example_wobble.gif?raw=true">
+  </div>
+</div>
 
 ## Installation
 
