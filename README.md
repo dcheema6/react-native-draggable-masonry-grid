@@ -6,9 +6,10 @@ Ability to create sectioned list with some hacks.
 
 Cons:
 
-- Data returned by different callbacks can be confusing, but I have given examples in the Usage section, so hopefully that will be enough
 - it requires you to pass height of each element to be displayed as part of data.
+- Sticky headers/indices may not work as expected.
 - viewabilityConfigCallbackPairs need to be passed separately for each column as columnViewabilityConfigCallbackPairs.
+- Data returned by different callbacks can be confusing, but I have given examples in the Usage section, so hopefully that will be enough.
 
 ## Installation
 
@@ -27,8 +28,9 @@ import DraggableMasonryGridList, {
 
 // ...
 
-const gridData = useMemo(() => {
-  return yourDataArray.map(item => {
+// Wrapping your data to pass into grid component
+const gridData: DraggableItem<YourItemType>[] = useMemo(() => {
+  return yourDataArray.map((item: YourItemType) => {
     return {
       // height is required to be known before render
       height: item.height,
@@ -39,19 +41,21 @@ const gridData = useMemo(() => {
   })
 }, [yourDataArray])
 
-// Alternatively you can also display sectioned masonary grid as well, but it doesn't work well with drag and drop
-const gridData = useMemo(() => {
-  return yourSectionsArray.map((items, index) => {
+// Alternatively you can also display sectioned masonary grid
+// as well, but it doesn't work well with drag and drop
+const gridData: DraggableItem<YourItemType>[] = useMemo(() => {
+  return yourSectionsArray.map((items: YourItemType[]) => {
     return [
       {
         height: sectionTitleHeight,
         isDraggable: false,
         item: {
-          // whatever data is required for you to know that this is a title in your renderItem function
+          // whatever data is required for you to know that
+          // this is a title in your renderItem function
         },
         type: 'ITEM',
       }
-      ...(items.map((item) => {
+      ...(items.map((item: YourItemType) => {
         return {
           // height is required to be known before render
           height: item.height,
@@ -60,8 +64,10 @@ const gridData = useMemo(() => {
           type: 'ITEM',
         }
       })),
-      // add 1 HEIGHT_EQUILIZER's for each column (2 columns in this example)
-      // This tells the component to add empty views to fill out space in that column up to the height of largest column
+      // add 1 HEIGHT_EQUILIZER's for each column
+      // (2 columns in this example). This tells the
+      // component to add empty views to fillout space
+      // in that column up to the height of largest column
       { type: 'HEIGHT_EQUILIZER' },
       { type: 'HEIGHT_EQUILIZER' },
     ]
@@ -73,20 +79,38 @@ const gridData = useMemo(() => {
 
 const gridListRef = useRef<DraggableMasonryGridListRef>(null)
 
-const onRearrange = useCallback((rearrangedData: DraggableItem<YourItemType>) => {
-    // You will need to filter out any HEIGHT_EQUILIZER's etc as need be to get the data in new sequence
-    const rearrangedPosts = rearrangedData
+// Handling async rearrange operations
+const onRearrangeAsync = useCallback(
+  async (rearrangedData: DraggableItem<YourItemType>) => {
+    // You will need to filter out any HEIGHT_EQUILIZER's
+    // etc as need be to get the data in new sequence
+    const rearrangedArray = rearrangedData
         .map(item => (item.type === 'ITEM' ? item.item : null))
         .filter((item): item is YourItemType => !!item)
     try {
-      // ... Do stuff
+      // ... Do async stuff
+      setYourDataArray(rearrangedArray)
     } catach {
+      // revert back on failure
       gridListRef.current?.animateToOriginalPositions()
     }
-}, [])
+  }
+, [])
 
+// Handling sync rearrange operations
+const onRearrangeSync = useCallback(
+  async (rearrangedData: DraggableItem<YourItemType>) => {
+    // You will need to filter out any HEIGHT_EQUILIZER's
+    // etc as need be to get the data in new sequence
+    const rearrangedArray = rearrangedData
+        .map(item => (item.type === 'ITEM' ? item.item : null))
+        .filter((item): item is YourItemType => !!item)
+    setYourDataArray(rearrangedArray)
+  }
+, [])
 
-const onScrollToItem = (itemId: string, animated: boolean = false) => {
+// Example on how to scroll any item
+const scrollToItemById = (itemId: string, animated: boolean = false) => {
     const indexToScrollTo = gridData.current.findIndex(
         item => item.type === 'ITEM' && item.item.pathToItemId === itemId,
     )
@@ -107,18 +131,22 @@ const onScrollToItem = (itemId: string, animated: boolean = false) => {
 
 const renderItem = useCallback(
   (
+    // DraggableMasonryGridListItem provides extra props such as
+    // column index for you to use in this function
     itemData: DraggableMasonryGridListItem<YourItemType>,
     drag: () => void,
     dragRelease: () => void
   ) => {
     const { item, columnIndex } = itemData;
     return (
-      <View
+      <Pressable
         // ...
+        onLongPress={drag}
         onPressOut={dragRelease}
+        // ...
       >
         {/** ... */}
-      </View>
+      </Pressable>
     );
   },
   [
@@ -171,7 +199,9 @@ return (
 
 ## Library in action
 
-https://github.com/user-attachments/assets/9427e600-dc1f-43ae-b805-5965e1f32f52
+<p align="center">
+  <img alt="Issue Stats" width="400" src="https://github.com/dcheema6/react-native-draggable-masonry-grid/blob/main/example.gif?raw=true">
+</p>
 
 ## Contributing
 
